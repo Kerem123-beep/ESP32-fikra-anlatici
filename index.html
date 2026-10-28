@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fıkra Makinesi</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #10131c;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+    }
+
+    main {
+      width: min(90%, 520px);
+      padding: 28px;
+      border-radius: 20px;
+      background: #202638;
+      text-align: center;
+      box-shadow: 0 12px 40px #0008;
+    }
+
+    h1 { margin-top: 0; color: #ffe066; }
+
+    #joke {
+      min-height: 100px;
+      font-size: 1.25rem;
+      line-height: 1.6;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      background: #ffe066;
+      color: #161616;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #status {
+      color: #bbc3d7;
+      font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Fıkra Makinesi 😄</h1>
+    <h2 id="title">Hazır mısın?</h2>
+    <p id="joke">Bir fıkra görmek için düğmeye bas.</p>
+    <button id="next">Yeni fıkra</button>
+    <p id="status"></p>
+  </main>
+
+  <script>
+    let jokes = [];
+    let lastIndex = -1;
+
+    async function loadJokes() {
+      const status = document.getElementById("status");
+
+      try {
+        const response = await fetch("./fikralar.json");
+        if (!response.ok) {
+          throw new Error(`Sunucu ${response.status} döndürdü`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data.fikralar) || data.fikralar.length === 0) {
+          throw new Error("JSON içinde fıkra listesi yok veya boş");
+        }
+
+        jokes = data.fikralar;
+        status.textContent = `${jokes.length} fıkra yüklendi.`;
+      } catch (error) {
+        status.textContent = `Fıkralar yüklenemedi: ${error.message}`;
+      }
+    }
+
+    function showRandomJoke() {
+      if (jokes.length === 0) return;
+
+      let index = Math.floor(Math.random() * jokes.length);
+      if (jokes.length > 1) {
+        while (index === lastIndex) {
+          index = Math.floor(Math.random() * jokes.length);
+        }
+      }
+
+      lastIndex = index;
+      document.getElementById("title").textContent = jokes[index].baslik;
+      document.getElementById("joke").textContent = jokes[index].metin;
+    }
+
+    document.getElementById("next").addEventListener("click", showRandomJoke);
+    loadJokes();
+  </script>
+</body>
+</html>
